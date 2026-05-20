@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
 from bot.db import ReminderDB
 
-FUTURE = datetime(2030, 1, 1, 12, 0, tzinfo=timezone.utc)
+FUTURE = datetime(2030, 1, 1, 12, 0, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -29,22 +29,16 @@ class TestAdd:
         assert r.active is True
 
     def test_with_daily_recurrence(self, db):
-        rid = db.add(
-            user_id=1, chat_id=10, text="x", fire_at=FUTURE, recurrence="daily"
-        )
+        rid = db.add(user_id=1, chat_id=10, text="x", fire_at=FUTURE, recurrence="daily")
         assert db.get(rid).recurrence == "daily"
 
     def test_with_weekly_recurrence(self, db):
-        rid = db.add(
-            user_id=1, chat_id=10, text="x", fire_at=FUTURE, recurrence="weekly"
-        )
+        rid = db.add(user_id=1, chat_id=10, text="x", fire_at=FUTURE, recurrence="weekly")
         assert db.get(rid).recurrence == "weekly"
 
     def test_invalid_recurrence_rejected(self, db):
         with pytest.raises(ValueError, match="recurrence"):
-            db.add(
-                user_id=1, chat_id=10, text="x", fire_at=FUTURE, recurrence="hourly"
-            )
+            db.add(user_id=1, chat_id=10, text="x", fire_at=FUTURE, recurrence="hourly")
 
 
 class TestGet:
@@ -129,7 +123,7 @@ class TestTimezone:
     def test_naive_datetime_treated_as_utc(self, db):
         naive = datetime(2030, 1, 1, 12, 0)
         rid = db.add(user_id=1, chat_id=10, text="x", fire_at=naive)
-        assert db.get(rid).fire_at == naive.replace(tzinfo=timezone.utc)
+        assert db.get(rid).fire_at == naive.replace(tzinfo=UTC)
 
     def test_aware_non_utc_normalised(self, db):
         plus_three = timezone(timedelta(hours=3))

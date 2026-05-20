@@ -9,7 +9,7 @@ from __future__ import annotations
 import sqlite3
 from contextlib import closing
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -82,16 +82,13 @@ class ReminderDB:
 
     def get(self, reminder_id: int) -> Reminder | None:
         with closing(self._connect()) as conn:
-            row = conn.execute(
-                "SELECT * FROM reminders WHERE id = ?", (reminder_id,)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM reminders WHERE id = ?", (reminder_id,)).fetchone()
             return _row_to_reminder(row) if row else None
 
     def list_for_user(self, user_id: int) -> list[Reminder]:
         with closing(self._connect()) as conn:
             rows = conn.execute(
-                "SELECT * FROM reminders WHERE user_id = ? AND active = 1 "
-                "ORDER BY fire_at ASC",
+                "SELECT * FROM reminders WHERE user_id = ? AND active = 1 " "ORDER BY fire_at ASC",
                 (user_id,),
             ).fetchall()
         return [_row_to_reminder(r) for r in rows]
@@ -118,9 +115,7 @@ class ReminderDB:
     def deactivate(self, reminder_id: int) -> None:
         """Mark a one-off reminder as fired so it stops appearing in lists."""
         with closing(self._connect()) as conn, conn:
-            conn.execute(
-                "UPDATE reminders SET active = 0 WHERE id = ?", (reminder_id,)
-            )
+            conn.execute("UPDATE reminders SET active = 0 WHERE id = ?", (reminder_id,))
 
     def reschedule(self, reminder_id: int, new_fire_at: datetime) -> None:
         """Advance a recurring reminder's next fire time."""
@@ -139,14 +134,14 @@ def _validate_recurrence(recurrence: Recurrence | None) -> None:
 
 def _serialize(dt: datetime) -> str:
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc).isoformat()
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC).isoformat()
 
 
 def _deserialize(value: str) -> datetime:
     dt = datetime.fromisoformat(value)
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     return dt
 
 

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from bot.scheduler import next_recurrence
 
-NOW = datetime(2026, 5, 14, 12, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 5, 14, 12, 0, tzinfo=UTC)
 
 
 class TestNextRecurrenceDaily:

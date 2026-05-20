@@ -12,7 +12,7 @@ Times in the past (relative to `now`) are rejected with `TimeParseError`.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta, timezone, tzinfo
+from datetime import UTC, datetime, timedelta, tzinfo
 
 __all__ = ["TimeParseError", "parse_time"]
 
@@ -72,7 +72,7 @@ def parse_time(
     if not text or not text.strip():
         raise TimeParseError("empty input")
 
-    tz = tz or timezone.utc
+    tz = tz or UTC
     if now is None:
         now = datetime.now(tz)
     elif now.tzinfo is None:

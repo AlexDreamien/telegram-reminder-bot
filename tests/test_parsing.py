@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from bot.parsing import TimeParseError, parse_time
 
-NOW = datetime(2026, 5, 14, 12, 0, tzinfo=timezone.utc)
+NOW = datetime(2026, 5, 14, 12, 0, tzinfo=UTC)
 
 
 class TestRelative:
@@ -69,19 +69,13 @@ class TestDayAnchored:
 
 class TestAbsoluteISO:
     def test_space_separator(self):
-        assert parse_time("2026-05-15 18:30", now=NOW) == datetime(
-            2026, 5, 15, 18, 30, tzinfo=timezone.utc
-        )
+        assert parse_time("2026-05-15 18:30", now=NOW) == datetime(2026, 5, 15, 18, 30, tzinfo=UTC)
 
     def test_t_separator(self):
-        assert parse_time("2026-05-15T18:30", now=NOW) == datetime(
-            2026, 5, 15, 18, 30, tzinfo=timezone.utc
-        )
+        assert parse_time("2026-05-15T18:30", now=NOW) == datetime(2026, 5, 15, 18, 30, tzinfo=UTC)
 
     def test_single_digit_components(self):
-        assert parse_time("2026-6-1 9:05", now=NOW) == datetime(
-            2026, 6, 1, 9, 5, tzinfo=timezone.utc
-        )
+        assert parse_time("2026-6-1 9:05", now=NOW) == datetime(2026, 6, 1, 9, 5, tzinfo=UTC)
 
     def test_past_rejected(self):
         with pytest.raises(TimeParseError):
@@ -94,14 +88,10 @@ class TestAbsoluteISO:
 
 class TestAbsoluteDot:
     def test_dot_format(self):
-        assert parse_time("15.05.2026 18:30", now=NOW) == datetime(
-            2026, 5, 15, 18, 30, tzinfo=timezone.utc
-        )
+        assert parse_time("15.05.2026 18:30", now=NOW) == datetime(2026, 5, 15, 18, 30, tzinfo=UTC)
 
     def test_dot_single_digit(self):
-        assert parse_time("1.6.2026 9:05", now=NOW) == datetime(
-            2026, 6, 1, 9, 5, tzinfo=timezone.utc
-        )
+        assert parse_time("1.6.2026 9:05", now=NOW) == datetime(2026, 6, 1, 9, 5, tzinfo=UTC)
 
     def test_dot_past_rejected(self):
         with pytest.raises(TimeParseError):
@@ -133,10 +123,10 @@ class TestInvalidInput:
 class TestTimezoneHandling:
     def test_naive_now_is_attached_to_tz(self):
         naive_now = datetime(2026, 5, 14, 12, 0)
-        result = parse_time("in 1 hour", now=naive_now, tz=timezone.utc)
+        result = parse_time("in 1 hour", now=naive_now, tz=UTC)
         assert result.tzinfo is not None
-        assert result == datetime(2026, 5, 14, 13, 0, tzinfo=timezone.utc)
+        assert result == datetime(2026, 5, 14, 13, 0, tzinfo=UTC)
 
     def test_default_tz_is_utc(self):
         result = parse_time("2030-01-01 12:00", now=NOW)
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC

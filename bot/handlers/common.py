@@ -15,8 +15,7 @@ log = logging.getLogger(__name__)
 router = Router()
 
 WELCOME = (
-    "Hi! I'm your personal reminder bot.\n"
-    "Use the menu below to add, view, or delete reminders."
+    "Hi! I'm your personal reminder bot.\n" "Use the menu below to add, view, or delete reminders."
 )
 
 HELP_TEXT = (
@@ -48,9 +47,7 @@ async def cmd_help(message: Message) -> None:
 @router.callback_query(MenuCB.filter(F.action == "help"))
 async def menu_help(query: CallbackQuery) -> None:
     if isinstance(query.message, Message):
-        await query.message.edit_text(
-            HELP_TEXT, reply_markup=main_menu(), parse_mode="HTML"
-        )
+        await query.message.edit_text(HELP_TEXT, reply_markup=main_menu(), parse_mode="HTML")
     await query.answer()
 
 

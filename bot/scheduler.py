@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.date import DateTrigger
@@ -28,9 +28,7 @@ _RECURRENCE_DELTA: dict[Recurrence, timedelta] = {
 }
 
 
-def next_recurrence(
-    after: datetime, last_fire_at: datetime, recurrence: Recurrence
-) -> datetime:
+def next_recurrence(after: datetime, last_fire_at: datetime, recurrence: Recurrence) -> datetime:
     """Return the next fire time for a recurring reminder strictly after `after`.
 
     When the bot has been offline for several occurrences, this fast-forwards
@@ -47,7 +45,7 @@ class ReminderScheduler:
     def __init__(self, db: ReminderDB, deliver: DeliverCallback) -> None:
         self._db = db
         self._deliver = deliver
-        self._scheduler = AsyncIOScheduler(timezone=timezone.utc)
+        self._scheduler = AsyncIOScheduler(timezone=UTC)
 
     def start(self) -> None:
         self._scheduler.start()
@@ -57,7 +55,7 @@ class ReminderScheduler:
 
     def restore(self) -> int:
         """Re-schedule every active reminder. Returns the number restored."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         restored = 0
         for reminder in self._db.list_all_active():
             fire_at = reminder.fire_at
@@ -106,7 +104,7 @@ class ReminderScheduler:
             self._db.deactivate(reminder_id)
             return
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         next_fire = next_recurrence(now, reminder.fire_at, reminder.recurrence)
         self._db.reschedule(reminder_id, next_fire)
         self._schedule_job(reminder_id, next_fire)

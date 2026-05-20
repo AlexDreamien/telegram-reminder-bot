@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
@@ -53,10 +53,7 @@ async def receive_text(message: Message, state: FSMContext) -> None:
     await state.update_data(text=text)
     await state.set_state(AddReminder.waiting_for_time)
     await message.answer(
-        "When? Examples:\n"
-        "- in 30 minutes\n"
-        "- tomorrow 09:30\n"
-        "- 2026-05-14 18:30",
+        "When? Examples:\n" "- in 30 minutes\n" "- tomorrow 09:30\n" "- 2026-05-14 18:30",
         reply_markup=cancel_kb(),
     )
 
@@ -65,7 +62,7 @@ async def receive_text(message: Message, state: FSMContext) -> None:
 async def receive_time(message: Message, state: FSMContext) -> None:
     raw = (message.text or "").strip()
     try:
-        fire_at = parse_time(raw, tz=timezone.utc)
+        fire_at = parse_time(raw, tz=UTC)
     except TimeParseError as exc:
         await message.answer(
             f"I couldn't parse that time: {exc}\nTry another format or tap Cancel.",
