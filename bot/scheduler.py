@@ -95,13 +95,22 @@ class ReminderScheduler:
             log.info("Reminder id=%d is no longer active, skipping", reminder_id)
             return
 
+        delivered = False
         try:
             await self._deliver(reminder)
+            delivered = True
         except Exception:
             log.exception("Failed to deliver reminder id=%d", reminder_id)
 
+        # Re-read so we don't resurrect a reminder deleted during delivery.
+        reminder = self._db.get(reminder_id)
+        if reminder is None or not reminder.active:
+            log.info("Reminder id=%d was removed during delivery, skipping reschedule", reminder_id)
+            return
+
         if reminder.recurrence is None:
-            self._db.deactivate(reminder_id)
+            if delivered:
+                self._db.deactivate(reminder_id)
             return
 
         now = datetime.now(UTC)

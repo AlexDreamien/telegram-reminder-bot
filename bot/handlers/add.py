@@ -82,6 +82,9 @@ async def receive_recurrence(
     db: ReminderDB,
     scheduler: ReminderScheduler,
 ) -> None:
+    if query.from_user is None:
+        await query.answer("User not identified.", show_alert=True)
+        return
     data = await state.get_data()
     text: str = data["text"]
     fire_at = datetime.fromisoformat(data["fire_at_iso"])

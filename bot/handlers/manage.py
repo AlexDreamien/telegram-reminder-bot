@@ -39,6 +39,9 @@ async def _replace(query: CallbackQuery, text: str, kb: InlineKeyboardMarkup) ->
 
 @router.callback_query(MenuCB.filter(F.action == "list"))
 async def show_list(query: CallbackQuery, db: ReminderDB) -> None:
+    if query.from_user is None:
+        await query.answer("User not identified.", show_alert=True)
+        return
     items = db.list_for_user(query.from_user.id)
     text, kb = _render_list(items)
     await _replace(query, text, kb)
@@ -47,6 +50,9 @@ async def show_list(query: CallbackQuery, db: ReminderDB) -> None:
 
 @router.callback_query(BackCB.filter(F.target == "list"))
 async def back_to_list(query: CallbackQuery, db: ReminderDB) -> None:
+    if query.from_user is None:
+        await query.answer("User not identified.", show_alert=True)
+        return
     items = db.list_for_user(query.from_user.id)
     text, kb = _render_list(items)
     await _replace(query, text, kb)
@@ -59,6 +65,9 @@ async def change_page(
     callback_data: ListPageCB,
     db: ReminderDB,
 ) -> None:
+    if query.from_user is None:
+        await query.answer("User not identified.", show_alert=True)
+        return
     items = db.list_for_user(query.from_user.id)
     text, kb = _render_list(items, page=callback_data.page)
     await _replace(query, text, kb)
@@ -71,6 +80,9 @@ async def view_reminder(
     callback_data: ReminderCB,
     db: ReminderDB,
 ) -> None:
+    if query.from_user is None:
+        await query.answer("User not identified.", show_alert=True)
+        return
     reminder = db.get(callback_data.reminder_id)
     if reminder is None or reminder.user_id != query.from_user.id:
         await query.answer("Reminder not found.", show_alert=True)
@@ -93,6 +105,9 @@ async def delete_reminder(
     db: ReminderDB,
     scheduler: ReminderScheduler,
 ) -> None:
+    if query.from_user is None:
+        await query.answer("User not identified.", show_alert=True)
+        return
     deleted = db.delete(callback_data.reminder_id, user_id=query.from_user.id)
     if deleted:
         scheduler.cancel(callback_data.reminder_id)
